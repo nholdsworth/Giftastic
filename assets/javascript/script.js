@@ -3,12 +3,13 @@ let gifs = ["Rodney Mullin", "Bam Margera", "Dolphin Flip", "Shaun White", "Jami
 let buttonArea = $("#button-area");
 let gifArea = $("#gif-area");
 let addGifButton = $("#add-gif");
+let gifId;
 
 // This function renders a button based on user input
 function renderButtons() {
 
     // clears the button area not sure I need this
-    // buttonArea.empty();
+    buttonArea.empty();
 
     for (let i = 0; i < gifs.length; i++) {
         // prevents empty buttons from being generated
@@ -52,9 +53,8 @@ $(document).on("click", "#add-gif", function (event) {
     gifs.push(gifInput);
     // This calls the render buttons function FIXME:I am trying to get the buttons to not all re-render on every click but it keeps saying indexOf not defined 
     // if (indexOf(gifs) === indexOf(gifInput)) {
-    //     renderButtons();
+    renderButtons();
     // };
-
 
 });
 
@@ -74,7 +74,7 @@ $(document).on("click", ".get-gif", function (event) {
 
         // this results variable holds the entire JSON data object that we GET from the Giphy API
         let results = response.data;
-        // console.log(results);
+        console.log(results);
 
         // for each time the button #get-gif button is clicked this loop will dynamically create...   
         for (var i = 0; i < results.length; i++) {
@@ -84,21 +84,33 @@ $(document).on("click", ".get-gif", function (event) {
             gifDiv.addClass("m-4");
             //  and a new <img>.
             let gifImg = $("<img>");
+            // add a <h2> to display the rating
+            let rating = $("<h2>");
+            rating.html(results[i].rating);
+            // gifDiv.append(rating);
 
             // The <img> tag is given the src attribute set to the the unique url that matches the user input which, is stored in the QueryURL variable since this is the url of the image that we want.  
             gifImg.attr({
                 src: results[i].images.fixed_height_still.url,
-                dataStill: results[i].images.fixed_height_still.url,
-                dataAnimate: results[i].images.fixed_height.url,
-                dataState: "still",
-                class: "gif"
+                "data-still": results[i].images.fixed_height_still.url,
+                "data-animate": results[i].images.fixed_height.url,
+                "data-state": "still",
+                class: "gif",
+                id: results[i].id
             });
+
+            gifId = results[i].id;
+            // console.log(gifId);
 
             // The image tag is then appended to the new div. 
             gifDiv.append(gifImg);
 
+            gifDiv.append(rating);
+
             // Finally the new div containing the <img> is prepended to the <div>. 
             gifArea.prepend(gifDiv);
+
+            // 
 
             // Now we have a dynamically updating container for a gif to be displayed based on user input!
         };
@@ -106,10 +118,18 @@ $(document).on("click", ".get-gif", function (event) {
 });
 
 // This click event handler is to change the gifs from still to moving
-$(".gif").on("click", function () {
-
-    let state = $(this).data("dataState");
+$(document).on("click", ".gif", function () {
+    let state = $(this).attr("data-state");
+    // let gifId = $(this).attr("id");
     console.log(state);
+
+    if (state === "still") {
+        $(this).attr("src", $(this).attr("data-animate"));
+        $(this).attr("data-state", "animate");
+    } else {
+        $(this).attr("src", $(this).attr("data-still"));
+        $(this).attr("data-state", "still");
+    };
 });
 
 // I could not get the buttons to not repeat yet and I could not get the gifs to change from still to animated when clicked.  I am going to try this tomorrow and resubmit.  I cannot figure out how to pull the dataState  out my my gifImg object in order to switch it on and on.  And I am still trying to figure out how to just add the last string pushed into the array for my render buttons function I think I have to use indexOf() in an if statement like if (indexOf([i])==)
